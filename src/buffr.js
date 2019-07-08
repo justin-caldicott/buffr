@@ -45,7 +45,7 @@ class Store {
       // TODO: How to handle if already exists, and config changed?
       throw new Error('not implemented');
     }
-    const storageIndex = this._storage.add(new Uint8Array(4096)); // TODO: Default size
+    const storageIndex = this._storage.add(new Uint8Array(0), 4096); // TODO: Default size
     this._rootDocument.indexes[name] = {
       storageIndex,
       indexType,
@@ -77,13 +77,14 @@ class Store {
     // TODO: PutBatch, so we can much more efficiently update indexes
     for (const [name, index] of Object.entries(this._indexes)) {
       const values = this._valueProviders[name].getValues(document);
-      index.add([values.map(v => [v, storageIndex])]);
+      index.add(values.map(v => [v, storageIndex]));
     }
   }
 
   get(index, value) {
     // TODO: Call index module to get data index
-    const data = this._storage.get(2);
+    const [ storageIndex ] = this._indexes[index].getIndexes(value);
+    const data = this._storage.get(storageIndex);
     return this._serializer.deserialize(data);
   }
 }

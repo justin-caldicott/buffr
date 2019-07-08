@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 class MemoryStorage {
   constructor() {
     const initialIndexCapacity = 4096;
@@ -17,13 +18,13 @@ class MemoryStorage {
    * @param {Uint8Array} data
    * @returns {number} index
    */
-  add(data) {
+  add(data, capacity = null) {
     const index = this.header[0];
     const offset = this.header[3];
     this.index[index] = offset; // TODO: Offsets as multiples of 16, to allow 32/64GB with 32-bits
     const itemHeader = new Uint32Array(this.buffer, offset, 2);
     itemHeader[0] = data.length;
-    const capacity = data.length + (4 - (data.length % 4)); // Adds an extra 4 bytes if already a multiple of 4, but it's ok
+    capacity = capacity || data.length + (4 - (data.length % 4)); // Adds an extra 4 bytes if already a multiple of 4, but it's ok
     itemHeader[1] = capacity;
     this.bytes.set(data, offset + 8);
     this.header[0] = this.header[0] + 1;

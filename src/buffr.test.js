@@ -14,9 +14,14 @@ describe('given', () => {
         valueProviderModules: [PropertyValueProvider],
       });
       store.ensureIndex('id', 'SequentialIndex', {}, 'PropertyValueProvider', 'id');
+
       const doc = { id: 0, foo: 'bar' };
       store.put(doc);
-      expect(store.get('id', doc.id)).toMatchObject(doc);
+      expect(store.get('id', doc.id)).toEqual(doc);
+
+      const doc2 = { id: 1, foo: 'baz' };
+      store.put(doc2);
+      expect(store.get('id', doc2.id)).toEqual(doc2);
     });
   });
 });
