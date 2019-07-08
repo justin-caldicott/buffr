@@ -1,7 +1,7 @@
 {
   "name": "buffr-js",
   "version": "0.0.1",
-  "description": "A modular in process document data store",
+  "description": "A modular in process document data store that can easily be frozen/thawed when stored in memory",
   "main": "buffr.js",
   "scripts": {
     "test": "jest --verbose",
