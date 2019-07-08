@@ -1,0 +1,38 @@
+{
+  "name": "buffr-js",
+  "version": "0.0.1",
+  "description": "A modular in process document data store",
+  "main": "buffr.js",
+  "scripts": {
+    "test": "jest --verbose",
+    "lint": "eslint . --ext .js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/justin-caldicott/buffr.git"
+  },
+  "keywords": [],
+  "author": "Justin Caldicott",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/justin-caldicott/buffr/issues"
+  },
+  "homepage": "https://github.com/justin-caldicott/buffr#readme",
+  "dependencies": {
+    "commander": "^2.19.0",
+    "npm-run": "^5.0.1",
+    "text-encoding": "^0.7.0",
+    "uuid": "^3.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.14.1",
+    "eslint-config-airbnb": "^17.1.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.16.0",
+    "eslint-plugin-jest": "^22.7.0",
+    "jest": "^24.1.0"
+  },
+  "engines": {
+    "node": "^8.10.0"
+  }
+}
