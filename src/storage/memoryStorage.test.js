@@ -1,3 +1,6 @@
+/* eslint-disable no-shadow */
+/* eslint-disable arrow-parens */
+const { test } = require('zora');
 const textEncoding = require('text-encoding');
 const MemoryStorage = require('./memoryStorage');
 
@@ -9,16 +12,16 @@ const decoder = new TextDecoder('utf-8');
 const payload = 'foo bar';
 const payload2 = 'foo bar baz';
 
-describe('given memoryStorage', () => {
-  test('when some data is stored, then we get the same data back', () => {
+test('memoryStorage', t => {
+  t.test('when some data is stored', t => {
     const storage = new MemoryStorage();
-    expect(storage.add(encoder.encode(payload))).toEqual(0);
-    expect(decoder.decode(storage.get(0))).toEqual(payload);
+    t.equal(storage.add(encoder.encode(payload)), 0, 'adds to correct index');
+    t.equal(decoder.decode(storage.get(0)), payload, 'we get the same data back');
   });
-  test('when a second item is stored, then we get the same data back', () => {
+  t.test('when a second item is stored', t => {
     const storage = new MemoryStorage();
-    expect(storage.add(encoder.encode(payload))).toEqual(0);
-    expect(storage.add(encoder.encode(payload2))).toEqual(1);
-    expect(decoder.decode(storage.get(1))).toEqual(payload2);
+    t.equal(storage.add(encoder.encode(payload)), 0, 'adds to correct index');
+    t.equal(storage.add(encoder.encode(payload2)), 1, 'adds to correct index');
+    t.equal(decoder.decode(storage.get(1)), payload2, 'we get the same data back');
   });
 });
