@@ -5,7 +5,6 @@ const StorageLease = require('./storage/storageLease');
 
 class Store {
   // Initially assumes documents are javascript objects
-  // TODO: Implement collections
   // TODO: Implement batched writes
   constructor(config) {
     // TODO: Validate config required properties
