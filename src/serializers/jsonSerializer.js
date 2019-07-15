@@ -1,12 +1,6 @@
 /* eslint-disable class-methods-use-this */
 
-// TODO: text-encoding is deprecated, though I see no obvious alternative, maybe fast-text-encoding, utf8?
-const textEncoding = require('text-encoding');
-
-const { TextEncoder, TextDecoder } = textEncoding;
-
-const encoder = new TextEncoder('utf-8');
-const decoder = new TextDecoder('utf-8');
+const snappy = require('snappy');
 
 class JsonSerializer {
   /**
@@ -14,7 +8,7 @@ class JsonSerializer {
    * @param {*} document
    */
   serialize(document) {
-    return encoder.encode(JSON.stringify(document));
+    return snappy.compressSync(JSON.stringify(document));
   }
 
   /**
@@ -22,7 +16,8 @@ class JsonSerializer {
    * @param {Uint8Array} data
    */
   deserialize(data) {
-    return JSON.parse(decoder.decode(data));
+    const buffer = Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+    return JSON.parse(snappy.uncompressSync(buffer, { asBuffer: false }));
   }
 }
 

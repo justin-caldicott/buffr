@@ -21,7 +21,7 @@
   "dependencies": {
     "commander": "^2.19.0",
     "npm-run": "^5.0.1",
-    "text-encoding": "^0.7.0",
+    "snappy": "^6.2.3",
     "uuid": "^3.3.2"
   },
   "devDependencies": {
