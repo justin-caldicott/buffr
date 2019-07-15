@@ -3,7 +3,7 @@
 const WriteBatch = require('./writeBatch');
 const StorageLease = require('./storage/storageLease');
 
-class Store {
+class Buffr {
   // Initially assumes documents are javascript objects
   // TODO: Implement batched writes
   constructor(config) {
@@ -120,4 +120,4 @@ class Store {
   }
 }
 
-module.exports = Store;
+module.exports = Buffr;
