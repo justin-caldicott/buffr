@@ -18,19 +18,20 @@ class Store {
 
     if (this._storage.length == 0) {
       this._rootDocument = {
-        indexes: {}
+        collections: {}
       };
       const data = this._serializer.serialize(this._rootDocument);
       this._storage.add(data);
-      this._indexes = {};
+      this._collections = {};
       this._valueProviders = {};
     } else {
       this._rootDocument = this._serializer.deserialize(this._storage.get(0));
-      this._indexes = this._rootDocument.indexes.map(i => new this._indexTypeModules[i.type](
+      // TODO: By name, code currently not covered..
+      this._collections = this._rootDocument.collections.map(c => { indexes: c.indexes.map(i => new this._indexTypeModules[i.type](
         new StorageLease(this._storage, i.storageIndex),
         new this._valueProviderModules[i.valueProviderType](i.valueProviderConfig),
         i.config
-      ));
+      ))});
       // this._valueProviders = {}; TODO
     }
     //config.storageModule e.g. can be in memory, on disk, on disk with transaction support, with snappy, etc
@@ -46,12 +47,14 @@ class Store {
    * @param {object} indexConfig Config for the index, specific to the index type used
    */
   putIndex(collectionName, indexName, indexType, indexConfig, valueProviderType, valueProviderConfig) {
-    if (this._rootDocument.indexes[indexName]) {
+    const collectionConfig = this._rootDocument.collections[collectionName] = this._rootDocument.collections[collectionName] || { indexes: {} };
+
+    if (collectionConfig.indexes[indexName]) {
       // TODO: How to handle if already exists, and config changed?
       throw new Error('not implemented');
     }
     const storageIndex = this._storage.add(new Uint8Array(0), 4096); // TODO: Default size
-    this._rootDocument.indexes[indexName] = {
+    collectionConfig.indexes[indexName] = {
       storageIndex,
       indexType,
       indexConfig,
@@ -59,7 +62,8 @@ class Store {
       valueProviderConfig,
     };
     const index = new this._indexTypeModules[indexType](new StorageLease(this._storage, storageIndex), indexConfig);
-    this._indexes[indexName] = index;
+    this._collections[collectionName] = this._collections[collectionName] || { indexes: {} };
+    this._collections[collectionName].indexes[indexName] = index;
     this._valueProviders[indexName] = new this._valueProviderModules[valueProviderType](valueProviderConfig);
   }
 
@@ -80,9 +84,8 @@ class Store {
     const data = this._serializer.serialize(document);
     const storageIndex = this._storage.add(data);
 
-    // TODO: Gather values into those added and removed, and update as needed
-    // TODO: PutBatch, so we can much more efficiently update indexes
-    for (const [name, index] of Object.entries(this._indexes)) {
+    // TODO: Index removes
+    for (const [name, index] of Object.entries(this._collections[collectionName].indexes)) {
       const values = this._valueProviders[name].getValues(document);
       index.add(values.map(v => [v, storageIndex]));
     }
@@ -104,7 +107,7 @@ class Store {
    */
   get(collectionName, indexName, value) {
     // TODO: Support multiple returned documents
-    const [storageIndex] = this._indexes[indexName].getIndexes(value);
+    const [storageIndex] = this._collections[collectionName].indexes[indexName].getIndexes(value);
     const data = this._storage.get(storageIndex);
     return this._serializer.deserialize(data);
   }
