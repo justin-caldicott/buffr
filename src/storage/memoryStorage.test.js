@@ -77,7 +77,16 @@ test('memoryStorage', t => {
     t.ok(isBasedOn(data.capacity, 128), 'getRaw returns the set capacity');
   });
 
-  // TODO: Initial index size
-  // TODO: Index growth
+  t.test('when initial index capacity is exceeded', t => {
+    const storage = new MemoryStorage({ initialIndexCapacity: 4 });
+    storage.add(payload);
+    storage.add(payload2);
+    storage.add(payload);
+    storage.add(payload);
+    t.equal(storage.add(payload), 4, 'returns the correct index');
+    t.equal(storage.get(4), payload, 'get returns the same data');
+    t.equal(storage.get(1), payload2, 'get of earlier items return the same data');
+  });
+
   // TOOD: Buffer growth
 });
