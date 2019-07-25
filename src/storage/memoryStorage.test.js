@@ -22,6 +22,11 @@ test('memoryStorage', t => {
     t.ok(isBasedOn(data.capacity, payload.length), 'getRaw returns capacity ~= length');
   });
 
+  // TODO: Test inputs:
+  // * capacity is a number
+  // * capacity >= data.length
+  // * data is a UInt8Array
+
   t.test('when some data is added, with capacity set', t => {
     const storage = new MemoryStorage();
     t.equal(storage.add(payload, 128), 0, 'returns the correct index');
@@ -88,5 +93,32 @@ test('memoryStorage', t => {
     t.equal(storage.get(1), payload2, 'get of earlier items return the same data');
   });
 
-  // TOOD: Buffer growth
+  t.test('when buffer length is exceeded by adding an item', t => {
+    const storage = new MemoryStorage({ initialDataCapacity: 8 });
+    storage.add(payload);
+    t.equal(storage.add(payload2), 1, 'returns the correct index');
+    t.equal(storage.get(1), payload2, 'get returns the same data');
+    t.equal(storage.get(0), payload, 'get of earlier items return the same data');
+  });
+
+  t.test('when buffer length is exceeded by updating an item', t => {
+    const storage = new MemoryStorage({ initialDataCapacity: 16 });
+    storage.add(payload);
+    storage.add(payload);
+    storage.update(1, payload2);
+    t.equal(storage.get(1), payload2, 'get returns the updated data');
+    t.equal(storage.get(0), payload, 'get of earlier items return the same data');
+  });
+
+  t.test('when buffer length is exceeded by the index growing', t => {
+    const storage = new MemoryStorage({ initialIndexCapacity: 4, initialDataCapacity: 4 * 16 });
+    storage.add(payload);
+    storage.add(payload);
+    storage.add(payload);
+    storage.add(payload);
+    storage.add(payload);
+    for (let i = 0; i < 5; i++) {
+      t.equal(storage.get(i), payload, `get ${i} returns the same data`);
+    }
+  });
 });

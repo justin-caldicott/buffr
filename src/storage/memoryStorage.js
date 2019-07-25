@@ -4,23 +4,25 @@
 /* eslint-disable no-param-reassign */
 
 const defaultInitialIndexCapacity = 4096;
+const defaultInitialDataCapacity = 65536;
 
 const nextMultipleOfFour = value => ((value + 3) & ~3);
 
 class MemoryStorage {
   constructor(config) {
     config = config || {};
-    config.initialIndexCapacity = nextMultipleOfFour(config.initialIndexCapacity || defaultInitialIndexCapacity);
+    const initialIndexCapacity = nextMultipleOfFour(config.initialIndexCapacity || defaultInitialIndexCapacity);
+    const initialDataCapacity = nextMultipleOfFour(config.initialDataCapacity || defaultInitialDataCapacity);
     const headerSize = 4 * 4;
-    this.buffer = new ArrayBuffer(headerSize + (4 * config.initialIndexCapacity) + 65536); // TODO: Start small and grow as needed
+    this.buffer = new ArrayBuffer(headerSize + (4 * initialIndexCapacity) + initialDataCapacity);
     this.bytes = new Uint8Array(this.buffer);
     const header = new Uint32Array(this.buffer, 0, 4);
-    header[0] = 0;                                              // Size
-    header[1] = config.initialIndexCapacity;                    // Capacity
-    header[2] = headerSize;                                     // Index offset
-    header[3] = headerSize + (4 * config.initialIndexCapacity); // Next data offset
+    header[0] = 0;                                       // Size
+    header[1] = initialIndexCapacity;                    // Capacity
+    header[2] = headerSize;                              // Index offset
+    header[3] = headerSize + (4 * initialIndexCapacity); // Next data offset
     this.header = header;
-    this.index = new Uint32Array(this.buffer, headerSize, config.initialIndexCapacity);
+    this.index = new Uint32Array(this.buffer, headerSize, initialIndexCapacity);
   }
 
   /**
@@ -33,8 +35,11 @@ class MemoryStorage {
 
     const index = header[0];
     if (index >= header[1]) { // < capacity
-      header[1] *= 2; // Capacity *= 2
-      header[2] = header[3]; // Index offset = Next data offset
+      const newIndexCapacity = header[1] * 2;
+      this._ensureBufferIsBigEnough(4 * newIndexCapacity + (capacity || data.length));
+
+      header[1] = newIndexCapacity; // Capacity = newIndexCapacity
+      header[2] = header[3];        // Index offset = Next data offset
       header[3] += (4 * header[1]); // Next data offset += (4 * Capacity)
       const newIndex = new Uint32Array(this.buffer, header[2], header[1]);
       newIndex.set(this.index, 0);
@@ -71,12 +76,27 @@ class MemoryStorage {
   _updateAtNewOffset(index, data, capacity) {
     const offset = this.header[3];
     this.index[index] = offset; // TODO: Offsets as multiples of 16, to allow 32/64GB with 32-bits
+    capacity = nextMultipleOfFour(capacity || data.length);
+
+    this._ensureBufferIsBigEnough(capacity + 8);
+
     const itemHeader = new Uint32Array(this.buffer, offset, 2);
     itemHeader[0] = data.length;
-    capacity = nextMultipleOfFour(capacity || data.length);
     itemHeader[1] = capacity;
     this.bytes.set(data, offset + 8);
     this.header[3] = this.header[3] + 8 + capacity;
+  }
+
+  _ensureBufferIsBigEnough(requiredCapacity) {
+    const offset = this.header[3];
+    if (offset + requiredCapacity > this.bytes.length) {
+      const newLength = nextMultipleOfFour(this.bytes.length * 2 + requiredCapacity);
+      const newBuffer = new ArrayBuffer(newLength);
+      const newBytes = new Uint8Array(newBuffer);
+      newBytes.set(this.bytes, 0);
+      this.buffer = newBuffer;
+      this.bytes = newBytes;
+    }
   }
 
   /**
