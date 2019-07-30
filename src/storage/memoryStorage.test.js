@@ -121,4 +121,21 @@ test('memoryStorage', t => {
       t.equal(storage.get(i), payload, `get ${i} returns the same data`);
     }
   });
+
+  t.test('when we start small and grow lots', t => {
+    const count = 1000;
+    const storage = new MemoryStorage({ initialIndexCapacity: 4, initialDataCapacity: 4 * 16 });
+    for (let i = 0; i < count; i++) {
+      storage.add(payload);
+      storage.update(i, payload2);
+    }
+
+    const results = [];
+    const expected = [];
+    for (let i = 0; i < count; i++) {
+      results.push(storage.get(i));
+      expected.push(payload2);
+    }
+    t.equal(results, expected, `gets returns the same data`);
+  });
 });
