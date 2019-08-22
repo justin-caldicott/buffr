@@ -1,6 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 
-class Lease {
+class StorageLease {
   constructor(storage, index) {
     this._storage = storage; // TODO: Find a way to actually make them unavailable outside
     this._index = index;
@@ -16,4 +16,4 @@ class Lease {
   }
 }
 
-module.exports = Lease;
+module.exports = StorageLease;
