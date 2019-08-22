@@ -6,12 +6,11 @@
 const stride = 2; // TODO: work it out
 
 class SequentialIndex {
-  constructor(storageLease, config) {
+  constructor(storageLease) {
     this._storageLease = storageLease;
     const block = storageLease.getRaw();
     this._length = block.length;
-    this._data = new Uint32Array(block.buffer, block.offset, block.capacity);
-    // No need for config yet
+    this._data = new Uint32Array(block.buffer, block.offset, block.capacity / 4);
   }
 
   // TODO: Hash type index that leases multiple storage blocks
@@ -19,20 +18,28 @@ class SequentialIndex {
 
   // IDEA: Guid references could be stored as documentIndexes, if referencial integrity is being preserved already
   // 260K documents with avg 6 references each would be 12MB.
+  /** 
+   * Add entries to the index
+   * @param entries An array of [value, dataIndex] arrays
+   */
   add(entries) {
     const data = this._data;
+    let shift = entries.length * stride;
+    let prevEnd = this._length * stride;
     for (const [value, index] of entries.sort((a, b) => a[0] < b[0])) { // TODO: Check direction of sort optimises copied data
       const insertOffset = this._getOffset(value);
       // TODO: Deal with overflow
-      data.copyWithin(insertOffset + 2, insertOffset, this._length * stride);
+      data.copyWithin(insertOffset + shift, insertOffset, prevEnd);
       data[insertOffset] = value; // TODO: Not just Uint32s...
       data[insertOffset + 1] = index;
       this._length++;
+      shift -= stride;
+      prevEnd = insertOffset;
     }
   }
 
   remove(entries) {
-    throw new Error('not implemented');
+    // TODO
   }
 
   getIndexes(value) {

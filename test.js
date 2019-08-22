@@ -17,6 +17,7 @@ console.log = msg => {
 
 require('./src/serializers/jsonSerializer.test');
 require('./src/storage/memoryStorage.test');
+require('./src/indexes/sequentialIndex.test');
 require('./src/buffr.test');
 
 // Once all of the tests have finished running
